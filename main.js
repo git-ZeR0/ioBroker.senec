@@ -1,12 +1,39 @@
 'use strict';
+//process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0'; // not cool, not nice - but well ... just a last option if everything else fails
+
+const https = require('https');
+const agent = new https.Agent({ 
+	requestCert: true,
+	rejectUnauthorized: false 
+});
 
 const utils = require('@iobroker/adapter-core');
-const axios = require('axios');
+
+const axios = require('axios').default;
+axios.defaults.headers.post['Content-Type'] = "application/json";
+
 const state_attr = require(__dirname + '/lib/state_attr.js');
 const state_trans = require(__dirname + '/lib/state_trans.js');
+const apiUrl = "https://app-gateway-prod.senecops.com/v1/senec";
+const apiLoginUrl = apiUrl + "/login";
+const apiSystemsUrl = apiUrl + "/anlagen";
+const apiKnownSystems = []
 
+let apiConnected = false;
+let apiLoginToken = "";
 let retry = 0; // retry-counter
 let retryLowPrio = 0; // retry-counter
+let connectVia = "http://";
+
+const allKnownObjects = new Set(["BAT1","BAT1OBJ1","BAT1OBJ2","BAT1OBJ3","BMS","BMS_PARA","CASC","DEBUG","DISPLAY","ENERGY","FACTORY","FEATURES","FILE","GRIDCONFIG","ISKRA","LOG","PM1","PM1OBJ1","PM1OBJ2","PV1","PWR_UNIT","RTC","SELFTEST_RESULTS","SOCKETS","STATISTIC","STECA","SYS_UPDATE","TEMPMEASURE","TEST","UPDATE","WALLBOX","WIZARD"]);
+
+const highPrioObjects = new Map;
+let lowPrioForm = "";
+let highPrioForm = "";
+
+let unloaded = false;
+
+const knownObjects = {};
 
 class Senec extends utils.Adapter {
 
@@ -32,9 +59,14 @@ class Senec extends utils.Adapter {
         this.setState('info.connection', false, true);
         try {
             await this.checkConfig();
+			await this.initPollSettings();
             await this.checkConnection();
-            await this.readSenecV21();
-            await this.readSenecV21LowPrio();
+			await this.initSenecAppApi();
+			if (apiConnected) await this.getApiSystems();
+			await this.pollSenec(true, 0); // highPrio
+			await this.pollSenec(false, 0); // lowPrio
+			await this.pollSenecAppApi(0); // App API
+			this.setState('info.connection', true, true);
         } catch (error) {
             this.log.error(error);
             this.setState('info.connection', false, true);
@@ -47,11 +79,12 @@ class Senec extends utils.Adapter {
      */
     onUnload(callback) {
         try {
+			unloaded = true;
             if (this.timer) {
                 clearTimeout(this.timer);
             }
-            if (this.timerLowPrio) {
-                clearTimeout(this.timerLowPrio);
+            if (this.timerAPI) {
+                clearTimeout(this.timerAPI);
             }
             this.log.info('cleaned everything up...');
             this.setState('info.connection', false, true);
@@ -60,6 +93,97 @@ class Senec extends utils.Adapter {
             callback();
         }
     }
+	
+	async initPollSettings() {
+		// creating form for low priority pulling (which means pulling everything we know)
+		// we can do this while preparing values for high prio
+		lowPrioForm = '{';	
+		for (const value of allKnownObjects) {
+			lowPrioForm += '"' + value + '":{},';
+			const objectsSet = new Set();
+			switch (value) {
+				case "BMS":
+					["CELL_TEMPERATURES_MODULE_A","CELL_TEMPERATURES_MODULE_B","CELL_TEMPERATURES_MODULE_C","CELL_TEMPERATURES_MODULE_D","CELL_VOLTAGES_MODULE_A","CELL_VOLTAGES_MODULE_B","CELL_VOLTAGES_MODULE_C","CELL_VOLTAGES_MODULE_D","CURRENT","SOC","SYSTEM_SOC","TEMP_MAX","TEMP_MIN","VOLTAGE"].forEach(item => objectsSet.add(item));
+					if (this.config.disclaimer && this.config.highPrio_BMS_active) this.addUserDps(value, objectsSet, this.config.highPrio_BMS);
+				break;
+				case "ENERGY":
+					["STAT_STATE","GUI_BAT_DATA_POWER","GUI_INVERTER_POWER","GUI_HOUSE_POW","GUI_GRID_POW","GUI_BAT_DATA_FUEL_CHARGE","GUI_CHARGING_INFO","GUI_BOOSTING_INFO","GUI_BAT_DATA_POWER","GUI_BAT_DATA_VOLTAGE","GUI_BAT_DATA_CURRENT","GUI_BAT_DATA_FUEL_CHARGE","GUI_BAT_DATA_OA_CHARGING","STAT_LIMITED_NET_SKEW"].forEach(item => objectsSet.add(item));
+					if (this.config.disclaimer && this.config.highPrio_ENERGY_active) this.addUserDps(value, objectsSet, this.config.highPrio_ENERGY);
+				break;
+				case "PV1":
+					["POWER_RATIO","MPP_POWER"].forEach(item => objectsSet.add(item));
+					if (this.config.disclaimer && this.config.highPrio_PV1_active) this.addUserDps(value, objectsSet, this.config.highPrio_PV1);
+				break;
+				case "PWR_UNIT":
+					["POWER_L1","POWER_L2","POWER_L3"].forEach(item => objectsSet.add(item));
+					if (this.config.disclaimer && this.config.highPrio_PWR_UNIT_active) this.addUserDps(value, objectsSet, this.config.highPrio_PWR_UNIT);
+				break;
+				case "PM1OBJ1":
+					["FREQ","U_AC","I_AC","P_AC","P_TOTAL"].forEach(item => objectsSet.add(item));
+					if (this.config.disclaimer && this.config.highPrio_PM1OBJ1_active) this.addUserDps(value, objectsSet, this.config.highPrio_PM1OBJ1);
+				break;
+				case "PM1OBJ2":
+					["FREQ","U_AC","I_AC","P_AC","P_TOTAL"].forEach(item => objectsSet.add(item));
+					if (this.config.disclaimer && this.config.highPrio_PM1OBJ2_active) this.addUserDps(value, objectsSet, this.config.highPrio_PM1OBJ2);
+				break;
+				case "STATISTIC":
+					["LIVE_GRID_EXPORT","LIVE_GRID_IMPORT","LIVE_HOUSE_CONS","LIVE_PV_GEN","LIVE_BAT_CHARGE_MASTER","LIVE_BAT_DISCHARGE_MASTER"].forEach(item => objectsSet.add(item));
+					if (this.config.disclaimer && this.config.highPrio_STATISTIC_active) this.addUserDps(value, objectsSet, this.config.highPrio_STATISTIC);
+				break;
+				case "WALLBOX":
+					if (this.config.disclaimer && this.config.highPrio_WALLBOX_active) this.addUserDps(value, objectsSet, this.config.highPrio_WALLBOX);
+				break;
+				case "BAT1":
+					if (this.config.disclaimer && this.config.highPrio_BAT1_active) this.addUserDps(value, objectsSet, this.config.highPrio_BAT1);
+				break;
+				case "BAT1OBJ1":
+					if (this.config.disclaimer && this.config.highPrio_BAT1OBJ1_active) this.addUserDps(value, objectsSet, this.config.highPrio_BAT1OBJ1);
+				break;
+				case "BAT1OBJ2":
+					if (this.config.disclaimer && this.config.highPrio_BAT1OBJ2_active) this.addUserDps(value, objectsSet, this.config.highPrio_BAT2OBJ1);
+				break;
+				case "BAT1OBJ3":
+					if (this.config.disclaimer && this.config.highPrio_BAT1OBJ3_active) this.addUserDps(value, objectsSet, this.config.highPrio_BAT3OBJ1);
+				break;
+				case "BAT1OBJ4":
+					if (this.config.disclaimer && this.config.highPrio_BAT1OBJ4_active) this.addUserDps(value, objectsSet, this.config.highPrio_BAT4OBJ1);
+				break;
+				case "TEMPMEASURE":
+					if (this.config.disclaimer && this.config.highPrio_TEMPMEASURE_active) this.addUserDps(value, objectsSet, this.config.highPrio_TEMPMEASURE);
+				break;
+				default:
+					// nothing to do here
+				break;
+			}
+			if (objectsSet.size > 0) {
+				highPrioObjects.set(value, objectsSet);
+			}
+		}
+		
+		lowPrioForm = lowPrioForm.slice(0, -1) +  '}';
+		this.log.info("(initPollSettings) lowPrio: " + lowPrioForm);
+		
+		// creating form for high priority pulling
+		highPrioForm = '{';
+		highPrioObjects.forEach( function (mapValue, key, map) {
+			highPrioForm += '"' + key + '":{';
+			mapValue.forEach (function (setValue) {
+				highPrioForm += '"' + setValue + '":"",';
+			})
+			highPrioForm = highPrioForm.slice(0, -1) +  '},';
+		})
+		highPrioForm = highPrioForm.slice(0, -1) +  '}';
+		this.log.info("(initPollSettings) highPrio: " + highPrioForm);
+	}
+	
+	addUserDps(value, objectsSet, dpToAdd) {
+		if (dpToAdd.trim().length < 1 || !/^[A-Z0-9_,]*$/.test(dpToAdd.toUpperCase().trim())) { // don't accept anything but entries like DP_1,DP2,dp3
+			this.log.warn("(addUserDps) Datapoints config for " + value + " doesn't follow [A-Z0-9_,] (no blanks allowed!) - Ignoring: " + dpToAdd.toUpperCase().trim());
+			return; 
+		}
+		dpToAdd.toUpperCase().trim().split(",").forEach(item => objectsSet.add(item));
+		this.log.info("(addUserDps) Datapoints config changed for " + value + ": " + dpToAdd.toUpperCase().trim());
+	}
 
     /**
      * checks config paramaters
@@ -72,8 +196,8 @@ class Senec extends utils.Adapter {
             this.config.interval = 10;
         }
         this.log.debug("(checkConf) Configured polling interval low priority: " + this.config.intervalLow);
-        if (this.config.intervalLow < 60 || this.config.intervalLow > 3600) {
-            this.log.warn("(checkConf) Config interval low priority " + this.config.intervalLow + " not [60..3600] minutes. Using default: 60");
+        if (this.config.intervalLow < 10 || this.config.intervalLow > 3600) {
+            this.log.warn("(checkConf) Config interval low priority " + this.config.intervalLow + " not [10..3600] minutes. Using default: 60");
             this.config.intervalLow = 60;
         }
         this.log.debug("(checkConf) Configured polling timeout: " + this.config.pollingTimeout);
@@ -91,21 +215,82 @@ class Senec extends utils.Adapter {
             this.log.warn("(checkConf) Config retry multiplier " + this.config.retrymultiplier + " not [1..10] seconds. Using default: 2");
             this.config.retrymultiplier = 2;
         }
+		this.log.debug("(checkConf) Configured https-usage: " + this.config.useHttps);
+		if (this.config.useHttps) {
+			connectVia = "https://";
+			this.log.debug("(checkConf) Switching to https ... " + this.config.useHttps);
+		}
+		this.log.debug("(checkConf) Configured api polling interval: " + this.config.api_interval);
+        if (this.config.api_interval < 3 || this.config.api_interval > 1440) {
+            this.log.warn("(checkConf) Config api polling interval " + this.config.api_interval + " not [3..1440] seconds. Using default: 5");
+            this.config.api_interval = 5;
+        }
     }
 
     /**
      * checks connection to senec service
      */
     async checkConnection() {
-        const url = 'http://' + this.config.senecip + '/lala.cgi';
+        const url = connectVia + this.config.senecip + '/lala.cgi';
         const form = '{"ENERGY":{"STAT_STATE":""}}';
         try {
-            this.log.info('connecting to Senec: ' + this.config.senecip);
-            const body = await this.doGet(url, form, this, this.config.pollingTimeout);
-            this.log.info('connected to Senec: ' + this.config.senecip);
-            this.setState('info.connection', true, true);
+            this.log.info('connecting to Senec: ' + url);
+            const body = await this.doGet(url, form, this, this.config.pollingTimeout, true);
+            this.log.info('connected to Senec: ' + url);
         } catch (error) {
-            throw new Error("Error connecting to Senec (IP: " + this.config.senecip + "). Exiting! (" + error + ")");
+            throw new Error("Error connecting to Senec (IP: " + connectVia + this.config.senecip + "). Exiting! (" + error + "). Try to toggle https-mode in settings and check FQDN of SENEC appliance.");
+        }
+    }
+	
+	/**
+     * Inits connection to senec app api
+     */
+    async initSenecAppApi() {
+		if (!this.config.api_use) {
+			this.log.info('Usage of SENEC App API not configured. Not using it');
+			return;
+		}
+        this.log.info('connecting to Senec App API: ' + apiLoginUrl);
+		const loginData = JSON.stringify({
+			password: this.config.api_pwd,
+			username: this.config.api_mail
+		});
+		try {
+            const body = await this.doGet(apiLoginUrl, loginData, this, this.config.pollingTimeout, true);
+            this.log.info('connected to Senec AppAPI.');
+			apiLoginToken = JSON.parse(body).token;
+			apiConnected = true;
+			axios.defaults.headers.get['authorization'] = apiLoginToken;
+        } catch (error) {
+            throw new Error("Error connecting to Senec AppAPI. Exiting! (" + error + ").");
+        }
+    }
+	
+	/**
+     * Reads system data from senec app api
+     */
+    async getApiSystems() {
+		const pfx = "_api.Anlagen.";
+		if (!this.config.api_use || !apiConnected) {
+			this.log.info('Usage of SENEC App API not configured or not connected.');
+			return;
+		}
+        this.log.info('Reading Systems Information from Senec App API ' + apiSystemsUrl);
+		try {
+            const body = await this.doGet(apiSystemsUrl, "", this, this.config.pollingTimeout, false);
+            this.log.info('Read Systems Information from Senec AppAPI.');
+			var obj = JSON.parse(body);
+			const systems = [];
+			for (const[key, value] of Object.entries(obj)) {
+				const systemId = value.id;
+				apiKnownSystems.push(systemId);
+				for (const[key2, value2] of Object.entries(value)) {
+					this.doState(pfx + systemId + "." + key2, JSON.stringify(value2), "", "", false);
+				}
+			}
+			this.doState(pfx + 'IDs', JSON.stringify(apiKnownSystems), "Anlagen IDs", "", false);
+        } catch (error) {
+            throw new Error("Error reading Systems Information from Senec AppAPI. (" + error + ").");
         }
     }
 
@@ -114,10 +299,11 @@ class Senec extends utils.Adapter {
      * @param url to read from
      * @param form to post
      */
-	async doGet(pUrl, pForm, caller, pollingTimeout) {
+	doGet(pUrl, pForm, caller, pollingTimeout, isPost) {
 		return new Promise(function (resolve, reject) {
 			axios({
-				method: 'post',
+				method: isPost ? 'post' : 'get',
+				httpsAgent: agent,
 				url: pUrl,
 				data: pForm,
 				timeout: pollingTimeout
@@ -134,6 +320,10 @@ class Senec extends utils.Adapter {
 					if (error.response) {
 						// The request was made and the server responded with a status code
 						caller.log.warn('(Poll) received error ' + error.response.status + ' response from SENEC with content: ' + JSON.stringify(error.response.data));
+						if (error.response.status == 403 && apiConnected) {
+							apiConnected = false; // apparently the api is inaccessible
+							this.initSenecAppApi();
+						}
 						reject(error.response.status);
 					} else if (error.request) {
 						// The request was made but no response was received
@@ -149,33 +339,21 @@ class Senec extends utils.Adapter {
 			);
 		});
 	}
-
-    /**
+	
+	/**
      * Read values from Senec Home V2.1
-     * Leaving out Wallbox info because it won't be supplied by senec if no wallbox configured
+	 * Careful with the amount and interval of HighPrio values polled because this causes high demand on the SENEC machine so it shouldn't run too often. Adverse effects: No sync with Senec possible if called too often.
      */
-    async readSenecV21() {
-        // read by webinterface are the following values. Not all are "high priority" though.
-        // "STATISTIC":{"STAT_DAY_E_HOUSE":"","STAT_DAY_E_PV":"","STAT_DAY_BAT_CHARGE":"","STAT_DAY_BAT_DISCHARGE":"","STAT_DAY_E_GRID_IMPORT":"","STAT_DAY_E_GRID_EXPORT":"","STAT_YEAR_E_PU1_ARR":""}
-        // "ENERGY":{"STAT_STATE":"","GUI_BAT_DATA_POWER":"","GUI_INVERTER_POWER":"","GUI_HOUSE_POW":"","GUI_GRID_POW":"","STAT_MAINT_REQUIRED":"","GUI_BAT_DATA_FUEL_CHARGE":"","GUI_CHARGING_INFO":"","GUI_BOOSTING_INFO":""}
-        // "WIZARD":{"CONFIG_LOADED":""},"SYS_UPDATE":{"UPDATE_AVAILABLE":""}
-        // "PV1":{"POWER_RATIO":""},"WIZARD":{"MAC_ADDRESS_BYTES":""},"BAT1OBJ1":{"BMS_NR_INSTALLED":"","SPECIAL_TIMEOUT":"","INV_CYCLE":"","TEMP1":"","TEMP2":"","TEMP3":"","TEMP4":"","TEMP5":"","SW_VERSION":"","SW_VERSION2":"","SW_VERSION3":"","I_DC":""},"BAT1OBJ2":{"TEMP1":"","TEMP2":"","TEMP3":"","TEMP4":"","TEMP5":"","I_DC":""},"BAT1OBJ3":{"TEMP1":"","TEMP2":"","TEMP3":"","TEMP4":"","TEMP5":"","I_DC":""},"PWR_UNIT":{"POWER_L1":"","POWER_L2":"","POWER_L3":""},"BAT1":{"CEI_LIMIT":""},"BMS":{}
-        // "PM1OBJ1":{"FREQ":"","U_AC":"","I_AC":"","P_AC":"","P_TOTAL":""},"PM1OBJ2":{"FREQ":"","U_AC":"","I_AC":"","P_AC":"","P_TOTAL":""}
-        // "ENERGY":{"STAT_HOURS_OF_OPERATION":"","STAT_DAYS_SINCE_MAINT":"","GUI_BAT_DATA_POWER":"","GUI_BAT_DATA_VOLTAGE":"","GUI_BAT_DATA_CURRENT":"","GUI_BAT_DATA_FUEL_CHARGE":"","GUI_BAT_DATA_OA_CHARGING":"","STAT_SULFAT_CHRG_COUNTER":"","STAT_LIMITED_NET_SKEW":"","STAT_LIMITED_NO_STAND_BY":"","GUI_CAP_TEST_DIS_COUNT":"","GUI_SCHARGE_REMAIN":"","GUI_SCHARGE_ELAPSED":"","GUI_CHARGING_INFO":"","OFFPEAK_DURATION":"","OFFPEAK_RUNNING":"","OFFPEAK_CURRENT":"","OFFPEAK_TARGET":""},"SYS_UPDATE":{"NPU_VER":"","NPU_IMAGE_VERSION":""}}
-
-        const url = 'http://' + this.config.senecip + '/lala.cgi';
-        var form = '{';
-		form += '"BMS":{"CELL_TEMPERATURES_MODULE_A":"","CELL_TEMPERATURES_MODULE_B":"","CELL_TEMPERATURES_MODULE_C":"","CELL_TEMPERATURES_MODULE_D":"","CELL_VOLTAGES_MODULE_A":"","CELL_VOLTAGES_MODULE_B":"","CELL_VOLTAGES_MODULE_C":"","CELL_VOLTAGES_MODULE_D":"","CURRENT":"","SOC":"","SYSTEM_SOC":"","TEMP_MAX":"","TEMP_MIN":"","VOLTAGE":""}';
-        form += ',"ENERGY":{"STAT_STATE":"","GUI_BAT_DATA_POWER":"","GUI_INVERTER_POWER":"","GUI_HOUSE_POW":"","GUI_GRID_POW":"","GUI_BAT_DATA_FUEL_CHARGE":"","GUI_CHARGING_INFO":"","GUI_BOOSTING_INFO":"","GUI_BAT_DATA_POWER":"","GUI_BAT_DATA_VOLTAGE":"","GUI_BAT_DATA_CURRENT":"","GUI_BAT_DATA_FUEL_CHARGE":"","GUI_BAT_DATA_OA_CHARGING":"","STAT_LIMITED_NET_SKEW":""}';
-        form += ',"PV1":{"POWER_RATIO":"","MPP_POWER":""}';
-        form += ',"PWR_UNIT":{"POWER_L1":"","POWER_L2":"","POWER_L3":""}';
-        form += ',"PM1OBJ1":{"FREQ":"","U_AC":"","I_AC":"","P_AC":"","P_TOTAL":""}';
-        form += ',"PM1OBJ2":{"FREQ":"","U_AC":"","I_AC":"","P_AC":"","P_TOTAL":""}';
-		form += ',"STATISTIC":{"LIVE_GRID_EXPORT":"","LIVE_GRID_IMPORT":"","LIVE_HOUSE_CONS":"","LIVE_PV_GEN":"","LIVE_BAT_CHARGE_MASTER":"","LIVE_BAT_DISCHARGE_MASTER":""}';
-        form += '}';
-			
-        try {
-            var body = await this.doGet(url, form, this, this.config.pollingTimeout);
+	async pollSenec(isHighPrio, retry) {
+		const url = connectVia + this.config.senecip + '/lala.cgi';	
+		var interval = this.config.interval * 1000;
+		if (!isHighPrio) { 
+			this.log.info('LowPrio polling ...');
+			interval = this.config.intervalLow * 1000 * 60
+		}
+		
+		try {
+            var body = await this.doGet(url, (isHighPrio ? highPrioForm : lowPrioForm), this, this.config.pollingTimeout, true);
 			if (body.includes('\\"')) { 
 				// in rare cases senec reports back extra escape sequences on some machines ...
 				this.log.info("(Poll) Double escapes detected!  Body inc: " + body);
@@ -186,55 +364,67 @@ class Senec extends utils.Adapter {
             await this.evalPoll(obj);
 
             retry = 0;
-            this.timer = setTimeout(() => this.readSenecV21(), this.config.interval * 1000);
+			if (unloaded) return;
+            this.timer = setTimeout(() => this.pollSenec(isHighPrio, retry), interval);
         } catch (error) {
             if ((retry == this.config.retries) && this.config.retries < 999) {
-                this.log.error("Error reading from Senec (" + this.config.senecip + "). Retried " + retry + " times. Giving up now. Check config and restart adapter. (" + error + ")");
+                this.log.error("Error reading from Senec " + (isHighPrio ? "high" : "low") + "Prio (" + this.config.senecip + "). Retried " + retry + " times. Giving up now. Check config and restart adapter. (" + error + ")");
                 this.setState('info.connection', false, true);
             } else {
                 retry += 1;
-                this.log.warn("Error reading from Senec (" + this.config.senecip + "). Retry " + retry + "/" + this.config.retries + " in " + this.config.interval * this.config.retrymultiplier * retry + " seconds! (" + error + ")");
-                this.timer = setTimeout(() => this.readSenecV21(), this.config.interval * this.config.retrymultiplier * retry * 1000);
+                this.log.warn("Error reading from Senec " + (isHighPrio ? "high" : "low") + "Prio (" + this.config.senecip + "). Retry " + retry + "/" + this.config.retries + " in " + (interval * this.config.retrymultiplier * retry) / 1000 + " seconds! (" + error + ")");
+                this.timer = setTimeout(() => this.pollSenec(isHighPrio, retry), interval * this.config.retrymultiplier * retry);
             }
         }
-    }
-
-    /**
-     * Read ALL values from Senec Home V2.1
-     * This causes high demand on the SENEC machine so it shouldn't run too often. Adverse effects: No sync with Senec possible if called too often.
+	}
+	
+	/**
+     * Read values from Senec App API
      */
-    async readSenecV21LowPrio() {
-        this.log.info('LowPrio polling ...');
-        // we are polling all known objects ...
-
-        const url = 'http://' + this.config.senecip + '/lala.cgi';
-        const form = '{"STATISTIC":{},"ENERGY":{},"FEATURES":{},"LOG":{},"SYS_UPDATE":{},"WIZARD":{},"BMS":{},"BAT1":{},"BAT1OBJ1":{},"BAT1OBJ2":{},"BAT1OBJ2":{},"BAT1OBJ3":{},"BAT1OBJ4":{},"PWR_UNIT":{},"PM1OBJ1":{},"PM1OBJ2":{},"PV1":{},"FACTORY":{},"GRIDCONFIG":{},"EG_CONTROL":{},"RTC":{},"PM1":{},"TEMPMEASURE":{},"DEBUG":{},"SOCKETS":{},"CASC":{},"WALLBOX":{},"CONNX50":{},"STECA":{}}';
-
-        try {
-            var body = await this.doGet(url, form, this, this.config.pollingTimeout);
-			if (body.includes('\\"')) { 
-				// in rare cases senec reports back extra escape sequences on some machines ...
-				this.log.info("(Poll) Double escapes detected!  Body inc: " + body);
-				body = body.replace(/\\"/g, '"');
-				this.log.info("(Poll) Double escapes autofixed! Body out: " + body);
+	async pollSenecAppApi(retry) {
+		var interval = this.config.api_interval * 60000;
+		this.log.debug("Polling API ...");
+		var body = "";
+		try {
+			for (let i = 0; i < apiKnownSystems.length; i++) {
+				// dashboard
+				var url = apiSystemsUrl + "/" + apiKnownSystems[i] + "/dashboard";
+				body = await this.doGet(url, "", this, this.config.pollingTimeout, false);
+				await this.decodeDashboard(apiKnownSystems[i], JSON.parse(body));
+				// // wallboxes - only if wallbox exists? - Without: error 500
+				//var url = apiSystemsUrl + "/" + apiKnownSystems[i] + "/wallboxes/1";
+				//body = await this.doGet(url, "", this, this.config.pollingTimeout, false);
+				//this.log.info("Abilities: " + body);
+				//await this.decodeWallbox(apiKnownSystems[i], JSON.parse(body));
 			}
-            var obj = JSON.parse(body, reviverNumParse);
-
-            await this.evalPoll(obj);
-
-            retryLowPrio = 0;
-            this.timerLowPrio = setTimeout(() => this.readSenecV21LowPrio(), this.config.intervalLow * 1000 * 60);
-        } catch (error) {
-            if ((retryLowPrio == this.config.retries) && this.config.retries < 999) {
-                this.log.error("Error reading from Senec lowPrio (" + this.config.senecip + "). Retried " + retryLowPrio + " times. Giving up now. Check config and restart adapter. (" + error + ")");
+			retry = 0;
+			if (unloaded) return;
+			this.timerAPI = setTimeout(() => this.pollSenecAppApi(retry), interval);
+		} catch (error) {
+            if ((retry == this.config.retries) && this.config.retries < 999) {
+                this.log.error("Error reading from Senec AppAPI. Retried " + retry + " times. Giving up now. Check config and restart adapter. (" + error + ")");
                 this.setState('info.connection', false, true);
             } else {
-                retryLowPrio += 1;
-                this.log.warn("Error reading from Senec lowPrio (" + this.config.senecip + "). Retry " + retryLowPrio + "/" + this.config.retries + " in " + this.config.interval * this.config.retrymultiplier * retryLowPrio + " minutes! (" + error + ")");
-                this.timerLowPrio = setTimeout(() => this.readSenecV21LowPrio(), this.config.interval * this.config.retrymultiplier * retryLowPrio * 1000 * 60);
+                retry += 1;
+                this.log.warn("Error reading from Senec AppAPI. Retry " + retry + "/" + this.config.retries + " in " + (interval * this.config.retrymultiplier * retry) / 1000 + " seconds! (" + error + ")");
+                this.timerAPI = setTimeout(() => this.pollSenecAppApi(retry), interval * this.config.retrymultiplier * retry);
             }
         }
-    }
+	}
+	
+	async decodeDashboard(system, obj) {
+		const pfx = "_api.Anlagen." + system + ".Dashboard.";
+		for (const[key, value] of Object.entries(obj)) {
+			if (key == "zeitstempel" || key == "electricVehicleConnected") {
+				this.doState(pfx + key, value, "", "", false);
+			} else {
+				for (const[key2, value2] of Object.entries(value)) {
+					this.doState(pfx + key + "." + key2, value2.wert, "", value2.einheit, false);
+				}
+			}
+		}
+		
+	}
 
     /**
      * sets a state's value and creates the state if it doesn't exist yet
@@ -246,50 +436,51 @@ class Senec extends utils.Adapter {
 			return;
 		}
 		this.log.silly('(doState) Update: ' + name + ': ' + value);
-        await this.setObjectNotExistsAsync(name, {
-            type: 'state',
-            common: {
-                name: description,
-                type: typeof(value),
-                role: 'value',
-                unit: unit,
-                read: true,
-                write: write
-            },
-            native: {}
-        });
-		
+       
+		const valueType = value !== null && value !== undefined ? typeof value : "mixed";
+	
 		// Check object for changes:
-		var obj = await this.getObjectAsync(name);
-		if (obj.common.name != description) {
-			this.log.debug("(doState) Updating object: " + name + " (desc): " + obj.common.name + " -> " + description);
-			await this.extendObject(name, {common: {name: description}});
-		}
-		if (obj.common.type != typeof(value)) {
-			this.log.debug("(doState) Updating object: " + name + " (type): " + obj.common.type + " -> " + typeof(value));
-			await this.extendObject(name, {common: {type: typeof(value)}});
-		}
-		if (obj.common.unit != unit) {
-			this.log.debug("(doState) Updating object: " + name + " (unit): " + obj.common.unit + " -> " + unit);
-			await this.extendObject(name, {common: {unit: unit}});
-		}
-		if (obj.common.write != write) {
-			this.log.debug("(doState) Updating object: " + name + " (write): " + obj.common.write + " -> " + write);
-			await this.extendObject(name, {common: {write: write}});
-		}
-
-        var oldState = await this.getStateAsync(name);
-        if (oldState) {
-            if (oldState.val === value) {
-				await this.checkUpdateSelfStat(name);
-                return;
+		const obj = knownObjects[name] ? knownObjects[name] : await this.getObjectAsync(name);
+		if (obj) {
+			const newCommon = {};
+			if (obj.common.name !== description) {
+				this.log.debug("(doState) Updating object: " + name + " (desc): " + obj.common.name + " -> " + description);
+				newCommon.name = description;
 			}
-            this.log.debug('(doState) Update: ' + name + ': ' + oldState.val + ' -> ' + value);
-        }
-        await this.setStateAsync(name, {
-            val: value,
-            ack: true
-        });
+			if (obj.common.type !== valueType) {
+				this.log.debug("(doState) Updating object: " + name + " (type): " + obj.common.type + " -> " + typeof value);
+				newCommon.type = valueType;
+			}
+			if (obj.common.unit !== unit) {
+				this.log.debug("(doState) Updating object: " + name + " (unit): " + obj.common.unit + " -> " + unit);
+				newCommon.unit = unit;
+			}
+			if (obj.common.write !== write) {
+				this.log.debug("(doState) Updating object: " + name + " (write): " + obj.common.write + " -> " + write);
+				newCommon.write = write;
+			}
+			if (Object.keys(newCommon).length > 0) {
+				await this.extendObjectAsync(name, { common: newCommon });
+			}
+		} else {
+			knownObjects[name] = {
+				type: "state",
+				common: {
+					name: description,
+					type: valueType,
+					role: "value",
+					unit: unit,
+					read: true,
+					write: write
+				},
+				native: {}
+			};
+			await this.setObjectNotExistsAsync(name, knownObjects[name]);
+		}
+		await this.setStateChangedAsync(name, {
+			val: value,
+			ack: true
+		});
 		await this.checkUpdateSelfStat(name);
 		await this.doDecode(name, value);
 	}
@@ -331,12 +522,13 @@ class Senec extends utils.Adapter {
 	 * creates / updates the state.
 	 */
     async evalPoll(obj) {
-        for (let[key1, value1]of Object.entries(obj)) {
-            for (let[key2, value2]of Object.entries(value1)) {
+		if (unloaded) return;
+        for (const[key1, value1] of Object.entries(obj)) {
+            for (const[key2, value2] of Object.entries(value1)) {
                 if (value2 !== "VARIABLE_NOT_FOUND" && key2 !== "OBJECT_NOT_FOUND") {
                     const key = key1 + '.' + key2;
                     if (state_attr[key] === undefined) {
-                        this.log.info('REPORT_TO_DEV: State attribute definition missing for: ' + key + ', Val: ' + value2);
+                        this.log.debug('REPORT_TO_DEV: State attribute definition missing for: ' + key + ', Val: ' + value2);
                     }	
                     const desc = (state_attr[key] !== undefined) ? state_attr[key].name : key2;
                     const unit = (state_attr[key] !== undefined) ? state_attr[key].unit : "";
@@ -396,7 +588,7 @@ class Senec extends utils.Adapter {
 				this.log.warn("(Calc) Not updating reference value for: " + name.substring(10) + "! Old RefValue (" + valRef + ") >= new RefValue (" + valCur + "). Impossible situation. If this is intentional, please update via admin!");
 			}
 		} else {
-			this.log.silly("(Calc) Updating " + day +" value for: " + name.substring(10) + ": " + Number((valCur - valRef).toFixed(2)));
+			this.log.debug("(Calc) Updating " + day +" value for: " + name.substring(10) + ": " + Number((valCur - valRef).toFixed(2)));
 			// update today's value
 			await this.doState(key + today, Number((valCur - valRef).toFixed(2)), descToday, unitToday, false);
 		}
@@ -446,9 +638,11 @@ class Senec extends utils.Adapter {
 		}
 		// update today's value - but beware of div/0
 		var newVal = 0;
-		if (valHouseCons > 0) newVal = Number((((valPVGen - valGridExp - valBatCharge + valBatDischarge) / valHouseCons) * 100).toFixed(0));
-		this.log.silly("(Autarky) Updating Autarky " + day +" value for: " + key + today + ": " + newVal);
-		if (valHouseCons > 0) await this.doState(key + today, newVal, descToday, unitToday, false);
+		if (valHouseCons > 0) {
+			newVal = Number((((valPVGen - valGridExp - valBatCharge + valBatDischarge) / valHouseCons) * 100).toFixed(0));
+			this.log.debug("(Autarky) Updating Autarky " + day +" value for: " + key + today + ": " + newVal);
+			await this.doState(key + today, newVal, descToday, unitToday, false);
+		}
 	}
 
 }
@@ -473,7 +667,7 @@ const ValueTyping = (key, value) => {
     } else if (isIP) {
         return DecToIP(value);
     } else if (multiply !== 1) {
-        return (value *= multiply).toFixed(2);
+        return parseFloat((value * multiply).toFixed(2));
     } else {
         return value;
     }

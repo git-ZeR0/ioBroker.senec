@@ -40,23 +40,19 @@ Systems that might work:
 * OEM LG
 * Solarinvert Storage 10.0 / Blei
 
-## Installation
-You can either install the adapter via the ioBroker web interface or on your local machine via npm.
+## Disclaimer
+**All product and company names or logos are trademarks™ or registered® trademarks of their respective holders. Use of them does not imply any affiliation with or endorsement by them or any associated subsidiaries! This personal project is maintained in spare time and has no business goal.**
 
-### Browser-based
+## Installation
+You can install the adapter via the ioBroker web interface.
+
 1. Open your ioBroker web interface in a browser (eg: 192.168.178.42:8081)
 2. Click on Tab "Adapters"
 3. Type "senec" in the filter
 4. Click on the  "+" symbol of the senec adapter
 
-### Local machine
-Navigate into your iobroker folder and execute the following command: 
-```bash
-npm i iobroker.senec
-```
-
 ## Setup
-Additional to the adapter installation you have to add an instance of the adapter.
+In addition to the adapter installation you have to add an instance of the adapter.
 
 ### ioBroker 
 1. Open your ioBroker interface in a browser (eg: 192.168.178.42:8081) (if configuration dialogue was opened automatically after installation, skip to 4.).
@@ -75,7 +71,7 @@ After each successful connect to SENEC, the number of retries is reset.
 5. Click on Save & Close
 
 ## Usage
-Here you can find a description of the states and how to use them. All states of this adapter are read-only states.
+Here you can find a description of the states (list is incomplete) and how to use them. All states of this adapter are read-only states.
 
 ### Example States (States differ per System and Version)
 
@@ -370,53 +366,47 @@ This channel contains calculated values. Currently these are day/week/month/year
    *Read-only number, which designates the number of wallbox [0..3]. This is only available on systems with configured wallboxes.*
 
 ## Changelog
-### 1.3.6 (NoBl)
-* Fixed log.warning error
+### 1.6.1 (NoBl)
+* Bugfixes
 
-### 1.3.5 (NoBl)
-* Added more state attributes (if you have updated descriptions or anything, please open an issue!)
-* Workaround in case SENEC reports bogus request data
+### 1.6.0 (NoBl)
+* Added option to also poll SENEC App API. This requires user credentials for mein-senec.de
+* We are starting with just some information - more to follow. But with Dashboard we at least have current values and day statistics back.
 
-### 1.3.4 (NoBl)
-* Moved from request to axios
-* Added more state attributes (if you have updated descriptions or anything, please open an issue!)
+### 1.5.1 (NoBl)
+* Added more datapoints. If you experience messages in log - feel free to add them yourself to state_attr on github (pull request)
+* Autarky calculations will stopp working because SENEC removed STATISTICS branch.
+* If you experience issues with connecting to your appliance after it got updated, please activate https connection in settings.
 
-### 1.3.3 (NoBl)
-* Updated to current template.
+### 1.5.0 (NoBl)
+* Added configuration section to add datapoints to high priority polling. Please be aware of the possible issues this could cause (if too many datapoints added) and use at your own risk.
+* ALL Wallbox datapoints have been removed from high priority polling. Only some users even have a SENEC wallbox. Please reconfigure via the new config dialogue.
+* Possible Candidate for stable. Please report any findings!
 
-### 1.3.2 (NoBl)
-* Autarky without decimal places (again). They are causing more updates than we really need.
-* Autarky values won't reset to 0 at change of timeframe (day, week, ...) anymore. They are calculated based on reference values anyways.
-* Ensuring that only values meant to be changeable by user are defined so (attribute changes upon the next update of value)
+### 1.4.3 (NoBl)
+* Working on https connection. Please test and report!
 
-### 1.3.1 (NoBl) 20210513
-* Added calculation of autarky for day/week/month/year
+### 1.4.2 (NoBl)
+* Added option to use https for connecting to SENEC (only activate if your appliance supports / requires this!)
 
-### 1.3.0 (NoBl) 20210509
-* Rewrote translations handling
-* Added translations for wallbox status.
-* Translated status get an extra datapoint with _Text as postfix. Former translations that didn't add an extra dp will now revert to their numeric representation and add the _Text DP.
-* Translations are now handled via lib/state_trans.js for all 3 languages available in the senec system (german, english, italian).
-* Language used is decided by the language of the SENEC appliance.
+### 1.4.1 (NoBl)
+* Fix: Autarky calculations are working again.
 
-### 1.2.0 (NoBl)
-* Added datapoints for: PM1OBJ1, PM1OBJ2, EG_CONTROL, RTC, PM1, TEMPMEASURE, DEBUG, SOCKETS, CASC, WALLBOX, CONNX50, STECA (please report wrong / missing units).
-* Adapter now calculates day/week/month/year-values for: STATISTIC.LIVE_GRID_EXPORT, STATISTIC.LIVE_GRID_IMPORT, STATISTIC.LIVE_HOUSE_CONS, STATISTIC.LIVE_PV_GEN, STATISTIC.LIVE_BAT_CHARGE_MASTER, STATISTIC.LIVE_BAT_DISCHARGE_MASTER. Calculated values can be found below the "_calc." datapoint. Information about daily values was removed from the API by SENEC in the past. So here we go again ...
+### 1.4.0 (NoBl)
+* Added object caching along with some minor code updates. Due to the amount of objects we deal with caching is about mandatory.
 
-### 1.1.1 (NoBl)
-* Object attributes are updated to what they are expected to be: unit, description, datatype (this will break anything that still relies on datapoints being STRING that aren't meant to be string)
-
-### 1.1.0 (NoBl)
-* Updated to current adapter template
-* Integrated GitHub Testing and auto npm publishing
-* Some other administrative updates
+### 1.3.10 (NoBl)
+* Fixed wrong Unit for STATISTIC.LIVE_WB_ENERGY
+* Updated to json Admin UI
+* Technical Updates
+* Added more state_attr definitions
 
 ### [Former Updates](CHANGELOG_old.md)
 
 ## License
 MIT License
 
-Copyright (c) 2022 Norbert Bluemle <github@bluemle.org>
+Copyright (c) 2023 Norbert Bluemle <github@bluemle.org>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

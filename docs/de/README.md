@@ -27,7 +27,10 @@ Systeme, die funktionieren dürften, da sie die gleiche Schnittstelle nutzen sin
 * Senec Business V2 3ph / Lithium
 * ADS Tec
 * OEM LG
-* Solarinvert Storage 10.0 / Blei,
+* Solarinvert Storage 10.0 / Blei
+
+## Haftungsausschluss
+**Alle Produkt- und Firmennamen oder -logos sind Warenzeichen™ oder eingetragene® Warenzeichen der jeweiligen Inhaber. Ihre Verwendung impliziert keine Zugehörigkeit oder Befürwortung durch diese oder zugehörige Tochtergesellschaften! Dieses persönliche Projekt wird in der Freizeit gepflegt und hat kein geschäftliches Ziel.
 
 ### SENEC.Home
 Es handelt sich um ein System, dessen Herzstück ein Lithium-Ionen-Akku ist, der Strom speichert und wieder abgibt, der von der Solaranlage auf dem Dach erzeugt wird. Das funktioniert genau wie beim Akku im Smartphone, Notebook oder dem Akkuschrauber. Es steckt im Prinzip auch die gleiche bewährte Technologie drin. Wenn du mehr Strom auf dem Dach erzeugst, als du selbst im Haus verbrauchen kannst, fließt der Strom nicht ins Netz, sondern in deinen Speicher. Du kannst ihn dann nutzen, wenn es dunkel wird oder Wolken aufziehen und du weniger oder keinen Strom mehr erzeugst. Dann kannst du auch abends mit deinem eigenen Solarstrom den Fernseher betreiben oder das Essen kochen. 
@@ -41,12 +44,13 @@ Nach Abschluss der Installation einer Adapterinstanz öffnet sich automatisch ei
 
 ## Konfiguration
 
-### Fenster "Haupteinstellungen"
-![Main Settings](media/mainSettings.png "Haupteinstellungen")
+### Fenster "Allgemeine Einstellungen"
+![Main Settings](media/mainSettings.png "Allgemeine Einstellungen")
 
 | Feld         | Beschreibung |                                                                       
 |:-------------|:-------------|
 |SENEC System    |Hier wird die IP-Adresse des gewünschten Senec.Home Systems angegeben werden. Falls im Netzwerk ein funktionierender DNS existiert, kann auch der FQDN angegeben werden.|
+|https verwenden?|Sollte das SENEC System bereits auf https umgestellt worden sein, so muss diese Option aktiviert werden.|
 |Abfrageintervall hohe Priorität|Hier wird eingegeben, in welchen Zeitintervallen (Millisekunden) die Werde hoher Priorität vom Senec.Home Systems abgerufen werden. (Default: 10 Sekunden)|
 |Abfrageintervall niedrige Priorität|Hier wird eingegeben, in welchen Zeitintervallen (Millisekunden) die Werde niedriger Priorität vom Senec.Home Systems abgerufen werden. (Default: 60 Minuten)<br>
 Achtung! Wird das SENEC System mit zu hoher Frequenz abgefragt, kann dies dazu führen, dass keine Daten mehr an die SENEC Server übermittelt werden können! (z.B. keine aktuellen Werte in der App oder auf mein-senec.de)|
@@ -57,8 +61,22 @@ Achtung! Wird das SENEC System mit zu hoher Frequenz abgefragt, kann dies dazu f
 Nach Abschluss der Konfiguration wird der Konfigurationsdialog mit `SPEICHERN UND SCHLIEßEN` verlassen. 
 Dadurch erfolgt im Anschluß ein Neustart des Adapters.
 
+### Fenster "Zusätzliche HighPrio Polling Datenpunkte"
+![Polling Settings](media/pollingSettings.png "Zusätzliche HighPrio Polling Datenpunkte")
+
+| Feld         | Beschreibung |                                                                       
+|:-------------|:-------------|
+|Disclaimer    |Um Änderungen am Polling-Verhalten des Adapters vorzunehmen, muss bestätigt werden, dass Sie möglicher Risiken gewahr sind und diese willentlich und wissentlich akzeptieren. Der Entwickler des Adapters trägt keine Verantwortung.|
+|Datenpunkte für unterschiedliche Bereiche|Hier können zusätzliche Datenpunkte angegeben werden, die mit hoher Priorität abgerufen werden sollen. Es dürfen nur Zeichen A-Z und Ziffern 0-9 sowie , zur Trennung genutzt werden.|
+|Datapoints zum Abruf hinzufügen?|Bestätigen Sie hier nochmals, dass sie die von Ihnen angegebenen Datenpunkte tatsächlich dem Polling mit hoher Priorität hinzufügen möchten.|
+
+Achtung! Wird das SENEC System mit zu hoher Frequenz und/oder zuvielen Datenpunkten abgefragt, kann dies dazu führen, dass keine Daten mehr an die SENEC Server übermittelt werden können (z.B. keine aktuellen Werte in der App oder auf mein-senec.de)! Auch kann das SENEC-System unmotiviert neu starten und/oder auf Anfragen nicht mehr reagieren. In diesem Fall hilft ein Stopp des Adapters und anschließende Korrektur der Einstellungen.
+
+Nach Abschluss der Konfiguration wird der Konfigurationsdialog mit `SPEICHERN UND SCHLIEßEN` verlassen. 
+Dadurch erfolgt im Anschluß ein Neustart des Adapters.
+
 ## Instanzen
-Die Installation des Adapters hat im Bereich `Objekte` eine aktive Instanz des sonnen Adapters angelegt.
+Die Installation des Adapters hat im Bereich `Objekte` eine aktive Instanz des Senec Adapters angelegt.
 
 Auf einem ioBroker Server können mehrere Senec Adapter Instanzen angelegt werden. Umgekehrt kann ein Senec.Home System auch mit mehreren ioBroker Servern betrieben werden. Sollen mehrere Geräte von einem ioBroker Server gesteuert werden, sollte je System eine Instanz angelegt werden.
 <br/><br/>
@@ -74,7 +92,7 @@ Zur Suche nach einem bestimmten Datenpunkt empfiehlt sich die Suche mittels der 
 Abhängig vom individuellen System können States nicht existieren oder aber auch nicht dokumentierte States auftreten.
 Falls zu einem State keine Dokumentation vorhanden ist, jemand aber weiß, was der State darstellt, bitte ich um einen entspr. Pull-Request (oder Ticket mit der entspr. Information eröffnen).
 
-### Beispiel States (verfügbare States sind abhängig von System und Softwarestand)
+### Beispiel States (verfügbare States sind abhängig von System und Softwarestand, die Liste ist grundsätzlich unvollständig)
 
 #### Channel: info
 

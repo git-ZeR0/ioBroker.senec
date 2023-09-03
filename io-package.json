@@ -1,98 +1,130 @@
 {
     "common": {
         "name": "senec",
-        "version": "1.3.6",
+        "version": "1.6.1",
         "news": {
-			"1.3.6": {
-				"en": "fixed log.warning error",
-				"de": "log.warning-Fehler behoben",
-				"ru": "исправлена ошибка log.warning",
-				"pt": "erro log.warning corrigido",
-				"nl": "vaste log.waarschuwingsfout",
-				"fr": "correction de l'erreur log.warning",
-				"it": "errore log.warning corretto",
-				"es": "error de advertencia de registro fijo",
-				"pl": "naprawiony błąd log.warning",
-				"zh-cn": "修复了 log.warning 错误"
+			"1.6.1": {
+				"en": "Bugfixes for API reading.",
+				"de": "Bugfixes im API Handling.",
+				"ru": "Bugfixes для чтения API.",
+				"pt": "Bugfixes para leitura de API.",
+				"nl": "Bugfixes voor API-lezing.",
+				"fr": "Bugfixes pour la lecture de l'API.",
+				"it": "Bugfixes per la lettura API.",
+				"es": "Bugfixes para la lectura de API.",
+				"pl": "Bugfixes for API reading (ang.).",
+				"uk": "Виправлення помилок для читання API.",
+				"zh-cn": "评 注."
 			},
-			"1.3.5-beta": {
-				"en": "Added more state attributes (if you have updated descriptions or anything, please open an issue!), Workaround in case SENEC reports bogus request data",
-				"de": "Weitere Beschreibungen für Datenpunkte hinzugefügt (wenn Sie hierzu Updates, fehlende Datenpunkte, etc haben, öffnen Sie bitte ein Ticket auf github; Problemumgehung für den Fall, dass SENEC gefälschte Anfragedaten meldet",
-				"ru": "Добавлено больше атрибутов состояния (если вы обновили описания или что-то еще, пожалуйста, откройте проблему!), Обходной путь в случае, если SENEC сообщает о фиктивных данных запроса",
-				"pt": "Adicionados mais atributos de estado (se você atualizou as descrições ou qualquer coisa, abra um problema!), Solução alternativa caso a SENEC relate dados de solicitação falsos",
-				"nl": "Meer statusattributen toegevoegd (als je beschrijvingen hebt bijgewerkt of iets dergelijks, open dan een probleem!), Tijdelijke oplossing voor het geval SENEC valse verzoekgegevens meldt",
-				"fr": "Ajout de plus d'attributs d'état (si vous avez mis à jour des descriptions ou quoi que ce soit, veuillez ouvrir un problème !), Solution de contournement au cas où SENEC signale de fausses données de demande",
-				"it": "Aggiunti più attributi di stato (se hai descrizioni aggiornate o altro, apri un problema!), Soluzione alternativa nel caso in cui SENEC segnali dati di richiesta fasulli",
-				"es": "Se agregaron más atributos de estado (si tiene descripciones actualizadas o algo, ¡abra un problema!), Solución alternativa en caso de que SENEC informe datos de solicitud falsos",
-				"pl": "Dodano więcej atrybutów stanu (jeśli zaktualizowałeś opisy lub cokolwiek, otwórz problem!), Obejście w przypadku, gdy SENEC zgłosi fałszywe dane żądania",
-				"zh-cn": "添加了更多的状态属性（如果您有更新的描述或任何内容，请打开一个问题！），以防 SENEC 报告虚假请求数据的解决方法"
+			"1.6.0": {
+				"en": "You can now configure to request SENEC App API.",
+				"de": "Sie können nun die SENEC App API abfragen.",
+				"ru": "Теперь вы можете настроить для запроса SENEC App API.",
+				"pt": "Agora você pode configurar para solicitar a API do SENEC App.",
+				"nl": "Je kunt nu configureren om SENEC App API te vragen.",
+				"fr": "Vous pouvez maintenant configurer pour demander l'API App SENEC.",
+				"it": "Ora è possibile configurare per richiedere l'API SENEC App.",
+				"es": "Ahora puede configurarse para solicitar SENEC App API.",
+				"pl": "Możesz teraz skonfigurować żądanie SENEC App API.",
+				"uk": "Ви можете налаштувати запит на SENEC App API.",
+				"zh-cn": "如今,你可以准备要求SENECSP。."
 			},
-			"1.3.4": {
-				"en": "Moved from request to axios, Added more state attributes (if you have updated descriptions or anything, please open an issue!)",
-				"de": "Poll von request zu axios geändert, weitere Zustandsattribute hinzugefügt (wenn Sie aktuellere Beschreibungen, ... haben, bitte issue auf GitHub eröffnen!)",
-				"ru": "Перемещено из запроса в аксиомы, добавлено больше атрибутов состояния (если вы обновили описания или что-то еще, пожалуйста, откройте проблему!)",
-				"pt": "Movido de solicitação para axios, Adicionado mais atributos de estado (se você atualizou as descrições ou qualquer coisa, abra um problema!)",
-				"nl": "Verplaatst van verzoek naar axios, meer statusattributen toegevoegd (als je beschrijvingen hebt bijgewerkt of iets dergelijks, open dan een probleem!)",
-				"fr": "Déplacé de la demande vers axios, Ajout de plus d'attributs d'état (si vous avez des descriptions mises à jour ou quoi que ce soit, veuillez ouvrir un problème !)",
-				"it": "Spostato da richiesta ad axios, Aggiunti più attributi di stato (se hai descrizioni aggiornate o altro, apri un problema!)",
-				"es": "Se movió de solicitud a axios, se agregaron más atributos de estado (si tiene descripciones actualizadas o algo así, ¡abra un problema!)",
-				"pl": "Przeniesiono z żądania do axios, dodano więcej atrybutów stanu (jeśli zaktualizowałeś opisy lub cokolwiek, otwórz zgłoszenie!)",
-				"zh-cn": "从 request 移到 axios，添加了更多状态属性（如果您有更新的描述或任何内容，请打开一个问题！）"
+			"1.5.2": {
+				"en": "Added more datapoints. If you experience messages in log - feel free to add them yourself to state_attr on github (pull request)",
+				"de": "Weitere Datenpunkte hinzugefügt. Du kennst weitere? Bitte PullRequest auf Github für state_attr.",
+				"ru": "Добавили больше точек данных. Если вы испытываете сообщения в логе - не стесняйтесь добавлять их самостоятельно в state_attr на github (по запросу)",
+				"pt": "Adicionado mais datapoints. Se você tiver mensagens no log - sinta-se livre para adicioná-las ao state_attr no github (requisito de envio)",
+				"nl": "Voegde meer datapoints toe. Als je berichten in het logboek ervaart, voel je vrij om ze zelf toe te voegen aan github (pull verzoek)",
+				"fr": "Ajout d'autres points de données. Si vous éprouvez des messages dans log - n'hésitez pas à les ajouter à state_attr sur github (demande de puissance)",
+				"it": "Aggiunti altri datapoint. Se si verificano messaggi in log - sentitevi liberi di aggiungerli a state_attr su github (domanda di voto)",
+				"es": "Se agregaron más puntos de datos. Si experimentas mensajes en el registro - no dudes en añadirlos a state_attr en github (pregunta completa)",
+				"pl": "Dodać więcej danych. Jeśli znajdziesz wiadomości w dzienniku – czuje się wolny, aby dodać ich do stanu_attr na github (pułki)",
+				"uk": "Додано більше точок даних. Якщо ви відчуваєте повідомлення в журналі - не соромтеся додати їх до стану_attr на github",
+				"zh-cn": "增加数据点。 如果你在逻辑上有信息,就认为可以自由地补充你自己的国家:对Tithub(要求)表示怀疑。"
 			},
-			"1.3.3": {
-				"en": "Update to current template.",
-				"de": "Update auf aktuelles Template.",
-				"ru": "Обновите текущий шаблон.",
-				"pt": "Atualize para o modelo atual.",
-				"nl": "Update naar huidige sjabloon.",
-				"fr": "Mettre à jour le modèle actuel.",
-				"it": "Aggiorna al modello corrente.",
-				"es": "Actualizar a la plantilla actual.",
-				"pl": "Zaktualizuj do bieżącego szablonu.",
-				"zh-cn": "更新到当前模板。"
+			"1.5.1": {
+				"en": "Added more datapoints. If you experience messages in log - feel free to add them yourself to state_attr on github (pull request)",
+				"de": "Weitere Datenpunkte hinzugefügt. Du kennst weitere? Bitte PullRequest auf Github für state_attr.",
+				"ru": "Добавили больше точек данных. Если вы испытываете сообщения в логе - не стесняйтесь добавлять их самостоятельно в state_attr на github (по запросу)",
+				"pt": "Adicionado mais datapoints. Se você tiver mensagens no log - sinta-se livre para adicioná-las ao state_attr no github (requisito de envio)",
+				"nl": "Voegde meer datapoints toe. Als je berichten in het logboek ervaart, voel je vrij om ze zelf toe te voegen aan github (pull verzoek)",
+				"fr": "Ajout d'autres points de données. Si vous éprouvez des messages dans log - n'hésitez pas à les ajouter à state_attr sur github (demande de puissance)",
+				"it": "Aggiunti altri datapoint. Se si verificano messaggi in log - sentitevi liberi di aggiungerli a state_attr su github (domanda di voto)",
+				"es": "Se agregaron más puntos de datos. Si experimentas mensajes en el registro - no dudes en añadirlos a state_attr en github (pregunta completa)",
+				"pl": "Dodać więcej danych. Jeśli znajdziesz wiadomości w dzienniku – czuje się wolny, aby dodać ich do stanu_attr na github (pułki)",
+				"uk": "Додано більше точок даних. Якщо ви відчуваєте повідомлення в журналі - не соромтеся додати їх до стану_attr на github",
+				"zh-cn": "增加数据点。 如果你在逻辑上有信息,就认为可以自由地补充你自己的国家:对Tithub(要求)表示怀疑。"
 			},
-			"1.3.2": {
-				"en": "Autarky without decimal places (again) or they would cause too many updates that are irrelevant especially when considering precision. Values also won't reset to 0 at change of timeframe (day, week, ...) anymore. They are calculated based on reference values anyways. Ensuring that only values meant to be changeable by user are defined so (attribute changes upon the next update of value)",
-				"de": "Autarkie (wieder) ohne Dezimalstellen, da sie mehr Updates verursachen, als wirklich benötigt werden (insbesondere im Rahmen der Rundungsgenauigkeiten). Auch werden die Werte bei Änderung des Zeitrahmens (Tag, Woche, ...) nicht mehr forciert auf 0 zurückgesetzt, da sie ohnehin anhand von Referenzwerten berechnet werden. Es wird auch sichergestellt, dass nur Werte geändert werden können, die vom Benutzer geändert werden sollen (Attributänderungen bei der nächsten Wertaktualisierung).",
-				"ru": "Автаркия без десятичных знаков (опять же). Они вызывают больше обновлений, чем нам действительно нужно. Значения автарки больше не сбрасываются на 0 при смене таймфрейма (день, неделя, ...). В любом случае они рассчитываются на основе справочных значений. Обеспечение того, чтобы были определены только значения, которые должны быть изменены пользователем (атрибут изменяется при следующем обновлении значения)",
-				"pt": "Autarquia sem casas decimais (novamente). Eles estão causando mais atualizações do que realmente precisamos. Os valores da Autarky não serão mais zerados na mudança do período (dia, semana, ...). Eles são calculados com base em valores de referência de qualquer maneira. Garantir que apenas os valores que devem ser alterados pelo usuário sejam definidos assim (alterações de atributo na próxima atualização de valor)",
-				"nl": "Autarkie zonder decimalen (opnieuw). Ze zorgen voor meer updates dan we echt nodig hebben. Autarky-waarden worden niet meer gereset naar 0 bij verandering van tijdsbestek (dag, week, ...). Ze worden sowieso berekend op basis van referentiewaarden. Ervoor zorgen dat alleen waarden die bedoeld zijn om door de gebruiker te kunnen worden gewijzigd, zo worden gedefinieerd (attribuut verandert bij de volgende update van waarde)",
-				"fr": "Autarcie sans décimales (encore une fois). Ils provoquent plus de mises à jour que ce dont nous avons vraiment besoin. Les valeurs d'autarcie ne seront plus remises à 0 lors du changement de la période (jour, semaine, ...). Ils sont de toute façon calculés sur la base des valeurs de référence. S'assurer que seules les valeurs censées être modifiables par l'utilisateur sont définies ainsi (l'attribut change lors de la prochaine mise à jour de la valeur)",
-				"it": "Autarchia senza cifre decimali (di nuovo). Stanno causando più aggiornamenti di quelli di cui abbiamo veramente bisogno. I valori di autarchia non si resetteranno più a 0 al cambio del periodo di tempo (giorno, settimana, ...). Sono comunque calcolati sulla base dei valori di riferimento. Garantire che solo i valori che devono essere modificabili dall'utente siano definiti in questo modo (l'attributo cambia al successivo aggiornamento del valore)",
-				"es": "Autarquía sin decimales (de nuevo). Están provocando más actualizaciones de las que realmente necesitamos. Los valores de autarquía ya no se restablecerán a 0 al cambiar el período de tiempo (día, semana, ...). De todos modos, se calculan sobre la base de valores de referencia. Asegurarse de que solo se definan así los valores que el usuario puede cambiar (el atributo cambia en la próxima actualización del valor)",
-				"pl": "Autarkia bez miejsc dziesiętnych (ponownie). Powodują więcej aktualizacji, niż naprawdę potrzebujemy. Wartości autarkii nie będą już resetowane do 0 przy zmianie przedziału czasowego (dzień, tydzień, ...). Są one i tak obliczane na podstawie wartości referencyjnych. Zapewnienie, że tylko wartości, które mają być zmieniane przez użytkownika, są tak zdefiniowane (atrybut zmienia się przy następnej aktualizacji wartości)",
-				"zh-cn": "再次没有小数位的Autarky。它们造成的更新超出了我们的实际需要。 Autarky值将不会在时间范围（天，周，...）更改时重置为0。无论如何，它们都是基于参考值计算的。确保仅定义要由用户更改的值（在值的下一次更新时归因于更改）"
+			"1.5.0": {
+				"en": "Added configuration section to add datapoints to high priority polling. Please be aware of the possible issues this could cause (if too many datapoints added) and use at your own risk. ALL Wallbox datapoints have been removed from high priority polling. Only some users even have a SENEC wallbox. Please reconfigure via the new config dialogue. Possible Candidate for stable. Please report any findings!",
+				"de": "Konfigurationsabschnitt hinzugefügt, um zusätzliche Datenpunkte mit hoher Priorität abzufragen. Bitte beachten Sie die möglichen Probleme, die dies verursachen könnte (wenn zu viele Datenpunkte hinzugefügt wurden). Nutzung auf eigenes Risiko. Standardgemäß werden nun keine Wallbox-Datenpunkte mehr mit hoher Priorität abgefragt (zu wenige User haben eine SENEC Wallbox). Diese nun bitte über den neuen Configdialog konfigurieren. Möglicher Kandidat für stable - bitte alle Probleme reporten.",
+				"ru": "Добавлен раздел конфигурации, чтобы добавить данные точки к высокому приоритетному опросу. Пожалуйста, имейте в виду возможные проблемы, которые могут вызвать (если слишком много добавленных данных) и использовать на вашем собственном риске. Все точки данных Wallbox были удалены из высококачественного опроса. Только некоторые пользователи даже имеют SENEC wallbox. Пожалуйста, обратите внимание на новый диалог.",
+				"pt": "Seção de configuração adicionada para adicionar datapoints a votação de alta prioridade. Por favor, esteja ciente dos possíveis problemas que isso poderia causar (se muitos datapoints adicionados) e usar em seu próprio risco. TODOS os datapoints da Wallbox foram removidos da votação de alta prioridade. Apenas alguns usuários têm uma caixa de parede SENEC. Por favor, reconfigure através do novo diálogo de configuração.",
+				"nl": "Toegevoegd configuration sectie om gegevens toe te voegen aan hoge prioriteitsvervuiling. Wees alsjeblieft op de hoogte van de mogelijke kwesties die dit kan veroorzaken... als te veel datapoints toegevoegd zijn en gebruik maken van je eigen risico. Alle Wallbox datapoints zijn verwijderd van hoge prioriteitsvervuiling. Alleen sommige gebruikers hebben zelfs een SENEC muurdoos. Herconfiguur via de nieuwe dialoog.",
+				"fr": "Ajout de la section de configuration pour ajouter des points de données à un sondage prioritaire. S'il vous plaît être conscient des problèmes possibles qui pourraient causer (si trop de points de données ajoutés) et utiliser à vos propres risques. Tous les points de données de Wallbox ont été retirés du vote prioritaire. Seuls certains utilisateurs ont même une boîte murale SENEC. Veuillez reconfigurer via le nouveau dialogue de configuration.",
+				"it": "Aggiunta sezione di configurazione per aggiungere datapoints ad inquinamento ad alta priorità. Si prega di essere consapevoli dei possibili problemi che questo potrebbe causare (se troppi punti di dati aggiunti) e utilizzare a proprio rischio. Tutti i datapoint di Wallbox sono stati rimossi dall'inquinamento ad alta priorità. Solo alcuni utenti hanno anche una parete SENEC. Si prega di riconfigurare tramite il nuovo dialogo di configurazione.",
+				"es": "Se agregó la sección de configuración para añadir puntos de datos a encuestas de alta prioridad. Tenga en cuenta los posibles problemas que esto podría causar (si se añaden demasiados datos) y utilizar a su propio riesgo. Todos los puntos de datos de Wallbox han sido eliminados de encuestas de alta prioridad. Sólo algunos usuarios tienen una caja de pared SENEC. Por favor reconfigure a través del nuevo diálogo de configuración.",
+				"pl": "Wtedy sekcja konfiguracji dodania punktów danych do wysokiego priorytetu. Poświadczenie o możliwych zagadnieniach może powodować (jeśli są zbyt wiele punktów danych) i wykorzystać swój własny ryzyko. ALL Wallbox datapoints zostały usunięte z wysokiego priorytetu. Tylko niektórzy użytkownicy mają nawet SENEC. Powraca się poprzez nowe dialogi.",
+				"uk": "Додано розділ конфігурації, щоб додати точки даних до високого пріоритетного опитування. Будь ласка, будь ласка, будь ласка, будь ласка, зв'яжіться з нами та користуйтеся власним ризиком. Усі точки даних Wallbox видаляються з високого  пріоритетного опитування. Тільки деякі користувачі навіть мають скриньку SENEC. Будь ласка, переадресація через новий діалог налаштування.",
+				"zh-cn": "增加数据点以进行高度优先投票。 请了解可能出现的问题(如果数据点增加),并利用你自己的风险。 已从高优先投票中删除了所有Wil箱数据点。 只有一些用户甚至有SENEC墙箱。 请通过新的混凝土对话进行改组。."
 			},
-			"1.3.1": {
-				"en": "(NoBl) Added calculation of autarky for day/week/month/year",
-				"de": "(NoBl) Berechnung der Autarkie für Tag / Woche / Monat / Jahr hinzugefügt",
-				"ru": "(NoBl) Добавлен расчет автаркии на день / неделю / месяц / год",
-				"pt": "(NoBl) Adicionado cálculo de autarquia para dia / semana / mês / ano",
-				"nl": "(NoBl) Berekening van autarkie toegevoegd voor dag / week / maand / jaar",
-				"fr": "(NoBl) Ajout du calcul de l'autarcie pour jour / semaine / mois / année",
-				"it": "(NoBl) Aggiunto il calcolo dell'autarchia per giorno / settimana / mese / anno",
-				"es": "(NoBl) Cálculo agregado de autarquía para día / semana / mes / año",
-				"pl": "(NoBl) Dodano obliczanie autarkii dla dnia / tygodnia / miesiąca / roku",
-				"zh-cn": "（NoBl）添加了针对日/周/月/年的自给自足计算"
+			"1.4.3": {
+				"en": "Working on https connection. Please test and report!",
+				"de": "Arbeiten an https-Verbindung. Bitte testen und melden!",
+				"ru": "Работает на связи https. Пожалуйста, проверьте и сообщите!",
+				"pt": "A trabalhar na ligação https. Por favor, teste e informe!",
+				"nl": "Werken aan HTP's verbinding. test en rapporteer!",
+				"fr": "Travailler sur la connexion https. S'il vous plaît tester et rapporter!",
+				"it": "Lavorare sul collegamento https. Si prega di testare e segnalare!",
+				"es": "Trabajando en la conexión https. ¡Por favor, prueba e informe!",
+				"pl": "Pracuje nad połączeniem https. Protestować i sprawdzić!",
+				"uk": "Робота на підключення HTTPS. Будь ласка, перевірте та звітуйте!",
+				"zh-cn": "关于网址的工作。 请试验和报告!"
 			},
-			"1.3.0": {
-				"en": "(NoBl) Rewrote translations handling and added translations for wallbox status. Translated status get an extra datapoint with _Text as postfix. Former translations that didn't add an extra dp will now revert to their numeric representation and add the _Text DP. translations are now handled via lib/state_trans.js for all 3 languages available in the senec system (german, english, italian).",
-				"de": "(NoBl) Übersetzungshandling neu designed und Übersetzungen für den Wallbox-Status hinzugefügt. Der übersetzte Status erhält einen zusätzlichen Datenpunkt mit _Text als Postfix. Frühere Übersetzungen ohne zusätzlichen DP werden auf ihren numerischen Wert zurückgesetzt und es wird der DP mit Postfix ergänzt. Übersetzungen werden jetzt über lib / state_trans.js für alle 3 im senec-System verfügbaren Sprachen (Deutsch, Englisch, Italienisch) abgewickelt.",
-				"ru": "(NoBl) Переписана обработка переводов и добавлены переводы для статуса wallbox. Переведенный статус получает дополнительную точку данных с _Text в качестве постфикса. Прежние переводы, которые не добавляли дополнительный dp, теперь вернутся к своему числовому представлению и добавят _Text DP. переводы теперь выполняются через lib / state_trans.js для всех 3 языков, доступных в системе senec (немецкий, английский, итальянский).",
-				"pt": "(NoBl) Manipulação de traduções reescritas e traduções adicionadas para status de wallbox. O status traduzido obtém um ponto de dados extra com _Text como postfix. As traduções anteriores que não adicionaram um dp extra irão agora reverter para sua representação numérica e adicionar o _Text DP. as traduções agora são feitas via lib / state_trans.js para todos os 3 idiomas disponíveis no sistema senec (alemão, inglês, italiano).",
-				"nl": "(NoBl) Verwerking van vertalingen herschreven en vertalingen toegevoegd voor wallbox-status. De vertaalde status krijgt een extra datapunt met _Text als postfix. Voormalige vertalingen die geen extra dp hebben toegevoegd, zullen nu terugkeren naar hun numerieke weergave en de _Text DP toevoegen. vertalingen worden nu afgehandeld via lib / state_trans.js voor alle 3 talen die beschikbaar zijn in het senec-systeem (duits, engels, italiaans).",
-				"fr": "(NoBl) Réécriture de la gestion des traductions et ajout de traductions pour le statut de la wallbox. Le statut traduit obtient un point de données supplémentaire avec _Text comme suffixe. Les anciennes traductions qui n'ajoutaient pas de dp supplémentaire reviendront maintenant à leur représentation numérique et ajouteront le _Text DP. les traductions sont désormais gérées via lib / state_trans.js pour les 3 langues disponibles dans le système senec (allemand, anglais, italien).",
-				"it": "(NoBl) Gestione delle traduzioni riscritta e traduzioni aggiunte per lo stato della wallbox. Lo stato tradotto ottiene un datapoint aggiuntivo con _Text come suffisso. Le precedenti traduzioni che non aggiungevano un dp extra torneranno ora alla loro rappresentazione numerica e aggiungeranno _Text DP. le traduzioni sono ora gestite tramite lib / state_trans.js per tutte e 3 le lingue disponibili nel sistema senec (tedesco, inglese, italiano).",
-				"es": "(NoBl) Reescribió el manejo de traducciones y agregó traducciones para el estado de wallbox. El estado traducido obtiene un punto de datos adicional con _Text como sufijo. Las traducciones anteriores que no agregaron un dp adicional ahora volverán a su representación numérica y agregarán el _Text DP. las traducciones ahora se manejan a través de lib / state_trans.js para los 3 idiomas disponibles en el sistema senec (alemán, inglés, italiano).",
-				"pl": "(NoBl) Przepisano obsługę tłumaczeń i dodano tłumaczenia dla statusu Wallbox. Status przetłumaczony otrzymuje dodatkowy punkt danych z _Textem jako postfiksem. Wcześniejsze tłumaczenia, które nie dodały dodatkowego dp, teraz powrócą do swojej reprezentacji numerycznej i dodają _Text DP. tłumaczenia są teraz obsługiwane przez lib / state_trans.js dla wszystkich 3 języków dostępnych w systemie senec (niemiecki, angielski, włoski).",
-				"zh-cn": "（NoBl）重新编写了翻译处理并添加了关于墙盒状态的翻译。转换后的状态以_Text作为后缀获得一个额外的数据点。以前没有添加额外dp的翻译现在将恢复为其数字表示形式，并添加_Text DP。现在可以通过lib / state_trans.js处理senec系统中所有3种语言（德语，英语，意大利语）的翻译。"
+			"1.4.2": {
+				"en": "Added option to use https for connecting to SENEC (only activate if your appliance supports / requires this!)",
+				"de": "Zusätzliche Option zur Verwendung von https zur Verbindung mit SENEC hinzugefügt (nur aktivieren, wenn Ihr Gerät dies unterstützt / erfordert)",
+				"ru": "Добавлена возможность использования https для подключения к SENEC (только активируйте, если ваше приложение поддерживает / требует этого)",
+				"pt": "Adicionado opção para usar https para conectar-se ao SENEC (apenas ativar se o seu aparelho suporta / requer este)",
+				"nl": "Aangepaste optie om HTP's te gebruiken voor verbinding met SENEC (only geactiveerd als je appliance steunt / vereist dit",
+				"fr": "Ajout de l'option d'utiliser les https pour se connecter à SENEC (seulement activer si votre appareil prend en charge / nécessite ceci) ",
+				"it": "Aggiunta opzione per utilizzare https per il collegamento a SENEC (solo attivare se il tuo elettrodomestici supporta / richiede questo)",
+				"es": "Opción agregada para usar https para conectarse a SENEC (sólo activar si su dispositivo soporta / requiere esto)",
+				"pl": "Dodana opcja do używania https dla połączenia z SENEC (w sposób aktywowana, jeśli dana osoba obsługuje / wymaga to)",
+				"uk": "Додано можливість використовувати HTTPS для підключення до SENEC (тільки активуйте, якщо підтримує додаток / вимагає цього)",
+				"zh-cn": "增加使用连接到SENEC的网站的选择(如果你的可靠支持/要求这样做)"
+			},
+			"1.4.1": {
+				"en": "Autarky calculations are working again.",
+				"de": "Autarkieberechnungen funktionieren wieder.",
+				"ru": "Расчеты Autarky снова работают.",
+				"pt": "Cálculos autarcos estão a funcionar outra vez.",
+				"nl": "Autarische berekeningen werken weer.",
+				"fr": "Les calculs Autarky fonctionnent à nouveau.",
+				"it": "I calcoli autarky funzionano di nuovo.",
+				"es": "Los cálculos autárquicos están funcionando de nuevo.",
+				"pl": "Ponowne obliczenia autarktyczne działają ponownie.",
+				"uk": "Аутарки знову працюють.",
+				"zh-cn": "Autarky的计算正再次工作。."
+			},
+			"1.4.0": {
+				"en": "Added object caching and minor code updates. Due to the amount of objects we deal with caching is about mandatory.",
+				"de": "Objekt-Caching und kleinere Code-Updates hinzugefügt. Aufgrund der Menge an Objekten, die der Adapter bearbeitet, ist Caching zwingend notwendig.",
+				"ru": "Добавлена кэшировка объекта и незначительные обновления кода. В связи с количеством объектов, с которыми мы занимаемся кэшированием, является обязательным.",
+				"pt": "Adicionado cache de objeto e pequenas atualizações de código. Devido à quantidade de objetos que lidamos com caching é sobre obrigatória.",
+				"nl": "Toegevoegd voorwerp caching en kleine code updates. Gezien de hoeveelheid objecten die we met caching hebben, gaat het over verplichting.",
+				"fr": "Ajout de cache d'objet et de mises à jour de code mineur. En raison de la quantité d'objets que nous traitons avec le cache est environ obligatoire.",
+				"it": "Aggiunti caching oggetto e aggiornamenti di codice minori. A causa della quantità di oggetti che abbiamo a che fare con il caching è circa obbligatorio.",
+				"es": "Añadido objeto caching y actualizaciones de código menor. Debido a la cantidad de objetos que tratamos con el caché es sobre obligatorio.",
+				"pl": "Dodany obiekt caching i drobnych aktualizacji kodu. Ze względu na ilość przedmiotów, które traktują z cachingiem, dotyczy obowiązkowych.",
+				"uk": "Додано кешування об'єкта та оновлення коду неповного розміру. У зв'язку з кількістю об'єктів, які ми маємо справу з кешуванням, є обов'язковим.",
+				"zh-cn": "添加了目标包和小法典的更新。 由于我们所处理的物品数量是强制性的。."
 			}
         },
         "docs": {
             "en": "docs/en/README.md",
             "de": "docs/de/README.md"
         },
-        "title": "Senec",
         "titleLang": {
             "en": "Senec",
             "de": "Senec",
@@ -103,17 +135,26 @@
             "it": "Senec",
             "es": "Senec",
             "pl": "Senec",
+			"uk": "Senec",
             "zh-cn": "塞内克"
         },
         "desc": {
-            "en": "This adapter reads available values from a Senec Home V2.1 system using lala.cgi.",
-            "de": "Dieser Adapter liest die in einem Senec Home V2.1 verfügbaren Werte via lala.cgi aus."
+            "en": "This adapter reads available values from a Senec Home V2.1 (and later) system using lala.cgi",
+			"de": "Dieser Adapter liest verfügbare Werte von einem Senec Home V2.1 (und später) System mit lala.cgi",
+			"ru": "Этот адаптер считывает доступные значения от системы Senec Home V2.1 (и позже) с помощью lala.cgi",
+			"pt": "Este adaptador lê valores disponíveis de um sistema Senec Home V2.1 (e posterior) usando lala.cgi",
+			"nl": "Deze adapter leest beschikbare waarden van een Senec Home V21 (en later) systeem met lala",
+			"fr": "Cet adaptateur lit les valeurs disponibles d'un système Senec Home V2.1 (et plus tard) utilisant lala.cgi",
+			"it": "Questo adattatore legge i valori disponibili da un sistema Senec Home V2.1 (e successivamente) utilizzando lala.cgi",
+			"es": "Este adaptador lee los valores disponibles de un sistema Senec Home V2.1 (y más tarde) usando lala.cgi",
+			"pl": "Ta adapter przeczytała dostępne wartości z systemu Senec Home V2.1 (a później) używając lala.cgi",
+			"uk": "Цей адаптер зчитуває доступні значення від Senec Home V2.1 (і пізніше) системи за допомогою lala.cgi",
+			"zh-cn": "这种适应者从Senec Home V2.1(和以后)利用Fla.cgi阅读了可使用的数值。"
         },
         "authors": [
             "NoBl <github@bluemle.org>"
         ],
         "keywords": [
-            "iobroker",
             "senec",
             "solar"
         ],
@@ -127,34 +168,22 @@
         "loglevel": "info",
         "mode": "daemon",
         "type": "energy",
+		"compact": true,
 		"connectionType": "local",
 	    "dataSource": "poll",
-		"compact": true,
-		"materialize": true,
-		"materializeTab": false,
-		"adminTab": {
-            "singleton": true,
-            "name": {
-                "en": "Senec (JavaScript)",
-                "de": "Senec (JavaScript)",
-                "ru": "Senec (JavaScript)",
-                "pt": "Senec (JavaScript)",
-                "nl": "Senec (JavaScript)",
-                "fr": "Senec (JavaScript)",
-                "it": "Senec (JavaScript)",
-                "es": "Senec (JavaScript)",
-                "pl": "Senec (JavaScript)",
-                "zh-cn": "塞内克 (JavaScript)"
-            },
-            "link": "",
-            "fa-icon": "info"
-        },
-		"supportCustoms": false,
+		"adminUI": {
+			"config": "json"
+		},
         "dependencies": [
 			{
-                "js-controller": ">=2.0.0"
+                "js-controller": ">=4.0.0"
             }
-        ]
+        ],
+	        "globalDependencies": [
+	            {
+	                "admin": ">=5.1.13"
+	            }
+	        ]
     },
     "native": {
         "senecip": "0.0.0.0",
@@ -162,7 +191,43 @@
 		"intervalLow": 60,
 		"pollingTimeout": 5000,
 		"retries": 10,
-		"retrymultiplier": 2
+		"retrymultiplier": 2,
+		"useHttps": false,
+		"disclaimer": false,
+		"highPrio_BMS": "",
+		"highPrio_BMS_active": false,
+		"highPrio_ENERGY": "",
+		"highPrio_ENERGY_active": false,
+		"highPrio_PV1": "",
+		"highPrio_PV1_active": false,
+		"highPrio_PWR_UNIT": "",
+		"highPrio_PWR_UNIT_active": false,
+		"highPrio_PM1OBJ1": "",
+		"highPrio_PM1OBJ1_active": false,
+		"highPrio_PM1OBJ2": "",
+		"highPrio_PM1OBJ2_active": false,
+		"highPrio_STATISTIC": "",
+		"highPrio_STATISTIC_active": false,
+		"highPrio_WALLBOX": "",
+		"highPrio_WALLBOX_active": false,
+		"highPrio_BAT1": "",
+		"highPrio_BAT1_active": false,
+		"highPrio_BAT1OBJ1": "",
+		"highPrio_BAT1OBJ1_active": false,
+		"highPrio_BAT1OBJ2": "",
+		"highPrio_BAT1OBJ2_active": false,
+		"highPrio_BAT1OBJ3": "",
+		"highPrio_BAT1OBJ3_active": false,
+		"highPrio_BAT1OBJ4": "",
+		"highPrio_BAT1OBJ4_active": false,
+		"highPrio_TEMPMEASURE": "",
+		"highPrio_TEMPMEASURE_active": false,
+		"api_use": false,
+		"api_interval": 5
+    },
+	"nativeEncrypted": {
+        "api_mail": "",
+        "api_pwd": ""
     },
     "objects": [],
     "instanceObjects": [{
