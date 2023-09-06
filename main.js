@@ -66,6 +66,10 @@ class Senec extends utils.Adapter {
 			await this.pollSenec(true, 0); // highPrio
 			await this.pollSenec(false, 0); // lowPrio
 			await this.pollSenecAppApi(0); // App API
+			await this.pollSenecAppApiStatsToday(0);
+			await this.pollSenecAppApiStatsYesterday(0);
+			await this.pollSenecAppApiStatsMonth(0);
+			await this.pollSenecAppApiStatsYear(0);
 			this.setState('info.connection', true, true);
         } catch (error) {
             this.log.error(error);
@@ -421,6 +425,130 @@ class Senec extends utils.Adapter {
 				for (const[key2, value2] of Object.entries(value)) {
 					this.doState(pfx + key + "." + key2, value2.wert, "", value2.einheit, false);
 				}
+			}
+		}
+		
+	}
+	
+	async pollSenecAppApiStatsToday(retry) {
+		var interval = this.config.api_interval * 60000;
+		this.log.debug("Polling API ...");
+		var body = "";
+		try {
+			for (let i = 0; i < apiKnownSystems.length; i++) {
+				// Statistic today
+				var currentDate = new Date().toISOString().split('T')[0];
+				var url = apiSystemsUrl + "/" + apiKnownSystems[i] + `/statistik?periode=TAG&datum=${currentDate}&locale=de_DE&timezone=Europe%2FBerlin`;
+				body = await this.doGet(url, "", this, this.config.pollingTimeout, false);
+				await this.decodeStatistic(apiKnownSystems[i], JSON.parse(body), "today");
+			}
+			retry = 0;
+			if (unloaded) return;
+			this.timerAPI = setTimeout(() => this.pollSenecAppApiStatsToday(retry), interval);
+		} catch (error) {
+            if ((retry == this.config.retries) && this.config.retries < 999) {
+                this.log.error("Error reading from Senec AppAPI. Retried " + retry + " times. Giving up now. Check config and restart adapter. (" + error + ")");
+                this.setState('info.connection', false, true);
+            } else {
+                retry += 1;
+                this.log.warn("Error reading from Senec AppAPI. Retry " + retry + "/" + this.config.retries + " in " + (interval * this.config.retrymultiplier * retry) / 1000 + " seconds! (" + error + ")");
+                this.timerAPI = setTimeout(() => this.pollSenecAppApiStatsToday(retry), interval * this.config.retrymultiplier * retry);
+            }
+        }
+	}
+	
+	async pollSenecAppApiStatsYesterday(retry) {
+		var interval = this.config.api_interval * 60000;
+		this.log.debug("Polling API ...");
+		var body = "";
+		try {
+			for (let i = 0; i < apiKnownSystems.length; i++) {
+				// Statistic yesterday
+				var currentDate = new Date();
+				currentDate.setDate(currentDate.getDate() - 1);
+				var DateYesterday = currentDate.toISOString().split('T')[0];
+				var url = apiSystemsUrl + "/" + apiKnownSystems[i] + `/statistik?periode=TAG&datum=${DateYesterday}&locale=de_DE&timezone=Europe%2FBerlin`;
+				body = await this.doGet(url, "", this, this.config.pollingTimeout, false);
+				await this.decodeStatistic(apiKnownSystems[i], JSON.parse(body), "yesterday");
+			}
+			retry = 0;
+			if (unloaded) return;
+			this.timerAPI = setTimeout(() => this.pollSenecAppApiStatsYesterday(retry), interval);
+		} catch (error) {
+            if ((retry == this.config.retries) && this.config.retries < 999) {
+                this.log.error("Error reading from Senec AppAPI. Retried " + retry + " times. Giving up now. Check config and restart adapter. (" + error + ")");
+                this.setState('info.connection', false, true);
+            } else {
+                retry += 1;
+                this.log.warn("Error reading from Senec AppAPI. Retry " + retry + "/" + this.config.retries + " in " + (interval * this.config.retrymultiplier * retry) / 1000 + " seconds! (" + error + ")");
+                this.timerAPI = setTimeout(() => this.pollSenecAppApiStatsYesterday(retry), interval * this.config.retrymultiplier * retry);
+            }
+        }
+	}
+	
+	async pollSenecAppApiStatsMonth(retry) {
+		var interval = this.config.api_interval * 60000;
+		this.log.debug("Polling API ...");
+		var body = "";
+		try {
+			for (let i = 0; i < apiKnownSystems.length; i++) {
+				// Statistic this Month
+				var currentDate = new Date().toISOString().split('T')[0];
+				var url = apiSystemsUrl + "/" + apiKnownSystems[i] + `/statistik?periode=MONAT&datum=${currentDate}&locale=de_DE&timezone=Europe%2FBerlin`;
+				body = await this.doGet(url, "", this, this.config.pollingTimeout, false);
+				await this.decodeStatistic(apiKnownSystems[i], JSON.parse(body), "month");
+			}
+			retry = 0;
+			if (unloaded) return;
+			this.timerAPI = setTimeout(() => this.pollSenecAppApiStatsMonth(retry), interval);
+		} catch (error) {
+            if ((retry == this.config.retries) && this.config.retries < 999) {
+                this.log.error("Error reading from Senec AppAPI. Retried " + retry + " times. Giving up now. Check config and restart adapter. (" + error + ")");
+                this.setState('info.connection', false, true);
+            } else {
+                retry += 1;
+                this.log.warn("Error reading from Senec AppAPI. Retry " + retry + "/" + this.config.retries + " in " + (interval * this.config.retrymultiplier * retry) / 1000 + " seconds! (" + error + ")");
+                this.timerAPI = setTimeout(() => this.pollSenecAppApiStatsMonth(retry), interval * this.config.retrymultiplier * retry);
+            }
+        }
+	}
+	
+	async pollSenecAppApiStatsYear(retry) {
+		var interval = this.config.api_interval * 60000;
+		this.log.debug("Polling API ...");
+		var body = "";
+		try {
+			for (let i = 0; i < apiKnownSystems.length; i++) {
+				// Statistic this Year
+				var currentDate = new Date().toISOString().split('T')[0];
+				var url = apiSystemsUrl + "/" + apiKnownSystems[i] + `/statistik?periode=JAHR&datum=${currentDate}&locale=de_DE&timezone=Europe%2FBerlin`;
+				body = await this.doGet(url, "", this, this.config.pollingTimeout, false);
+				await this.decodeStatistic(apiKnownSystems[i], JSON.parse(body), "year");
+			}
+			retry = 0;
+			if (unloaded) return;
+			this.timerAPI = setTimeout(() => this.pollSenecAppApiStatsYear(retry), interval);
+		} catch (error) {
+            if ((retry == this.config.retries) && this.config.retries < 999) {
+                this.log.error("Error reading from Senec AppAPI. Retried " + retry + " times. Giving up now. Check config and restart adapter. (" + error + ")");
+                this.setState('info.connection', false, true);
+            } else {
+                retry += 1;
+                this.log.warn("Error reading from Senec AppAPI. Retry " + retry + "/" + this.config.retries + " in " + (interval * this.config.retrymultiplier * retry) / 1000 + " seconds! (" + error + ")");
+                this.timerAPI = setTimeout(() => this.pollSenecAppApiStatsYear(retry), interval * this.config.retrymultiplier * retry);
+            }
+        }
+	}
+	
+	async decodeStatistic(system, obj, timerange) {
+		const pfx = "_api.Anlagen." + system + ".Statistic." + timerange + ".";
+		const aggregation = obj.aggregation;
+		for (const[key, value] of Object.entries(aggregation)) {
+			if (key == "startzeitpunkt") {
+				this.doState(pfx + key, value, "", "", false);
+			} else {
+				//this.doState(pfx + key, value.wert, "", value.einheit, false);
+				this.doState(pfx + key, parseFloat((value.wert / 1000).toFixed(2)), "", "kWh", false);
 			}
 		}
 		
