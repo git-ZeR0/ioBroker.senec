@@ -402,7 +402,7 @@ class Senec extends utils.Adapter {
 			["THIS_MONTH", new Date().toISOString().split('T')[0]],
 			["LAST_MONTH", new Date(new Date().setDate(0)).toISOString().split('T')[0]],
 			["THIS_YEAR", new Date().toISOString().split('T')[0]],
-			["LAST_YEAR", new Date(new Date().getFullYear() - 1, 1, 1).toISOString().split('T')[0]]
+			//["LAST_YEAR", new Date(new Date().getFullYear() - 1, 1, 1).toISOString().split('T')[0]]
 		]);
 				
 		this.log.debug("Polling API ...");
